@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>HTML to APK Studio</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--card:#121a2d;--line:#283653;--text:#f2f5ff;--muted:#9eabc7;--accent:#8b7cff;--accent2:#54e1c1}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:radial-gradient(ellipse at top,#20244c 0,#0b1020 55%);color:var(--text);min-height:100vh;padding:28px 16px}
+main{max-width:760px;margin:auto}.brand{display:flex;gap:12px;align-items:center;margin:10px 0 28px}.logo{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#0b1020;font-weight:900;font-size:20px}.hint{font-size:12px;color:var(--muted);margin-top:7px}.eyebrow{color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase}h1{font-size:clamp(32px,6vw,52px);line-height:1.04;margin:10px 0 14px;letter-spacing:-1.8px}p{color:var(--muted);line-height:1.6}.panel{background:rgba(18,26,45,.92);border:1px solid var(--line);border-radius:22px;padding:24px;margin-top:24px;box-shadow:0 20px 70px #0003}.field{margin:17px 0}.field label{display:block;font-size:14px;font-weight:700;margin-bottom:8px}input[type=text],input[type=file]{width:100%;padding:14px;border:1px solid #34415e;border-radius:12px;background:#0c1324;color:var(--text);font:inherit}input[type=file]{border-style:dashed;padding:18px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.btn{width:100%;padding:15px;border:0;border-radius:13px;background:linear-gradient(100deg,var(--accent),#6e9dff);font-weight:850;color:white;font-size:16px;cursor:pointer;margin-top:8px}.btn:disabled{opacity:.6;cursor:wait}.notice{background:#1b263e;border:1px solid #354665;padding:14px;border-radius:12px;font-size:13px;color:#cbd5ef;margin-top:18px}.status{margin-top:16px;white-space:pre-wrap;font-size:14px;line-height:1.5}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:24px}.step{padding:14px;border:1px solid var(--line);border-radius:14px;background:#ffffff05}.num{color:var(--accent2);font-size:12px;font-weight:900}.step strong{display:block;margin:7px 0;font-size:14px}.step span{color:var(--muted);font-size:12px;line-height:1.5}.foot{text-align:center;font-size:12px;margin:24px 0;color:#7887a8}@media(max-width:540px){.grid,.steps{grid-template-columns:1fr}.panel{padding:18px}}
+</style>
+</head>
+<body><main>
+<div class="brand"><div class="logo">A→</div><div><strong>HTML to APK Studio</strong><div class="hint">WEB PROJECT CONVERTER</div></div></div>
+<div class="eyebrow">Dari web jadi aplikasi Android</div>
+<h1>HTML kamu.<br>Jadi aplikasi.</h1>
+<p>Unggah satu file HTML untuk membungkusnya menjadi APK Android berbasis WebView. File APK akan dibuat oleh worker build terpisah.</p>
+<section class="panel">
+<form id="form">
+<div class="field"><label for="htmlFile">File HTML</label><input id="htmlFile" name="htmlFile" type="file" accept=".html,.htm,text/html" required><div class="hint">Maksimal 1 MB. CSS, JavaScript, dan gambar terpisah tidak ikut; sematkan aset ke dalam HTML.</div></div>
+<div class="grid">
+<div class="field"><label for="appName">Nama aplikasi</label><input id="appName" name="appName" type="text" maxlength="40" value="Aplikasi HTML" required></div>
+<div class="field"><label for="packageId">Package ID</label><input id="packageId" name="packageId" type="text" value="com.example.htmlapp" required><div class="hint">Contoh: com.nama.game</div></div>
+</div>
+<button class="btn" id="submit" type="submit">⚡ Buat APK</button>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+</form>
+<div class="notice"><strong>Keamanan:</strong> unggah hanya file yang kamu miliki atau boleh kamu gunakan. Hasilnya APK debug untuk pengujian, bukan APK release yang sudah ditandatangani.</div>
+</section>
+<div class="steps">
+<div class="step"><div class="num">01 / UPLOAD</div><strong>Pilih HTML</strong><span>Pilih satu file halaman web.</span></div>
+<div class="step"><div class="num">02 / BUILD</div><strong>Build Android</strong><span>Worker menjalankan Android SDK dan Gradle.</span></div>
+<div class="step"><div class="num">03 / DOWNLOAD</div><strong>Unduh APK</strong><span>Simpan file hasil build ke perangkat.</span></div>
+</div>
+<div class="foot">HTML to APK Studio · Build Android sederhana</div>
+</main>
+<script src="./config.js"></script>
+<script>
+const form=document.querySelector('#form'),statusBox=document.querySelector('#status'),button=document.querySelector('#submit');
+form.addEventListener('submit',async e=>{
+ e.preventDefault();
+ const worker=(window.HTML_APK_WORKER_URL||'').replace(/\/+$/,'');
+ const key=window.HTML_APK_API_KEY||'';
+ if(!worker||worker.includes('YOUR-WORKER-URL')||!key||key.includes('CHANGE-THIS')){
+   statusBox.textContent='Konfigurasi belum selesai. Edit frontend/config.js dengan URL worker HTTPS dan kunci demo yang sama seperti di server.';return;
+ }
+ const file=document.querySelector('#htmlFile').files[0];
+ if(!file)return;
+ if(file.size>1024*1024){statusBox.textContent='File terlalu besar. Maksimal 1 MB.';return;}
+ const packageId=document.querySelector('#packageId').value.trim();
+ if(!/^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*){1,5}$/.test(packageId)){
+   statusBox.textContent='Package ID tidak valid. Contoh: com.amarku.aplikasi';return;
+ }
+ button.disabled=true;button.textContent='⏳ Sedang membangun…';statusBox.textContent='Mengunggah HTML dan membangun APK. Ini dapat memerlukan beberapa menit…';
+ try{
+  const data=new FormData(form);
+  const response=await fetch(worker+'/api/convert',{method:'POST',headers:{'x-api-key':key},body:data});
+  if(!response.ok){let message='Build gagal.';try{const j=await response.json();message=j.error||message}catch{}throw new Error(message);}
+  const blob=await response.blob();
+  if(blob.size<100)throw new Error('Respons build kosong atau tidak valid.');
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=(document.querySelector('#appName').value||'html-app').replace(/[^a-z0-9-_]/gi,'-')+'.apk';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  statusBox.textContent='APK berhasil dibuat. Unduhan seharusnya sudah dimulai.';
+ }catch(err){statusBox.textContent='Belum berhasil: '+err.message+'\nPeriksa URL worker, API key, CORS, dan log build worker.'}
+ finally{button.disabled=false;button.textContent='⚡ Buat APK'}
+});
+</script>
+</body></html>
